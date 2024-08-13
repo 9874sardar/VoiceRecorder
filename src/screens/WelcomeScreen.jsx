@@ -6,7 +6,7 @@ const WelcomeScreen = ({navigation}) => {
     <SafeAreaView className="flex-1 flex justify-around bg-white">
       <View className="space-y-2">
         <Text className="text-center text-4xl font-bold text-gray-700">
-          Jarvis
+          Tariq's AI
         </Text>
         <Text className="text-center tracking-wider font-semibold text-gray-600">
           The Future is Knocking at your door

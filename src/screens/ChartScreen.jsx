@@ -15,11 +15,19 @@ const ChartScreen = ({navigation}) => {
     <html>
       <head>
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-      </head>
+        <style>
+        h1{text-align: center;
+        font-size:60;
+        padding:10px;}
+        </style>
+        </head>
       <body>
-        <canvas id="myChart" width="300" height="200"></canvas>
-        <canvas id="myChart1" width="300" height="200"></canvas>
-        <canvas id="bubble" width="300" height="200"></canvas>
+      <canvas id="myChart" width="300" height="200"></canvas>
+      <h1>Bar Chart</h1>
+      <canvas id="myChart1" width="300" height="200"></canvas>
+      <h1>Doughnut Chart</h1>
+      <canvas id="bubble" width="300" height="200"></canvas>
+      <h1>Bubble Chart</h1>
         <script>
           var ctx = document.getElementById('myChart').getContext('2d');
           var myChart = new Chart(ctx, {
@@ -111,6 +119,11 @@ const ChartScreen = ({navigation}) => {
             }
           });
         </script>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
+        <br/>
       </body>
     </html>
   `;
