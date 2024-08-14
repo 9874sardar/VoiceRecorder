@@ -1,23 +1,53 @@
+import React, { useEffect, useState, useRef } from "react";
 import {
-  Image,
-  ScrollView,
-  StyleSheet,
+  View,
   Text,
   TouchableOpacity,
-  View,
+  Image,
+  AppState,
+  ScrollView,
 } from "react-native";
-import React, { useEffect, useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Button } from "react-native-paper";
 import Voice from "@react-native-voice/voice";
-// import Voice from '@react-native-community/voice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const HomeScreen = ({ navigation }) => {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+    "Hello how are you",
+    "I hope you are fine",
+    "I wish to fine you",
+    "you are very pretty",
+    "you are looking lovely today",
+    "Hello how are you",
+    "I hope you are fine",
+    "I wish to fine you",
+    "you are very pretty",
+    "you are looking lovely today",
+    "things were just great",
+    "Lets go for a walk",
+    "I will go for a walk",
+    "T will Miss you forever",
+    "Do you think yor good enough",
+    "You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.",
+    "For more on this, please refer to in the Gradle documentation.",
+    "No apps connected. Sending ",
+    "happy independence day to you too"
+  ]);
   const [recording, setRecording] = useState(false);
   const [error, setError] = useState("");
+  // const appState = useRef(AppState.currentState);
+  const [wordFrequencies, setWordFrequencies] = useState({});
+
+  console.log("wordFrequencies", wordFrequencies);
 
   useEffect(() => {
+    storeData();
+  }, [wordFrequencies]);
+
+  useEffect(() => {
+    
+    // storeData();
     Voice.onSpeechStart = () => {
       console.log("Speech");
       setRecording(true);
@@ -25,59 +55,55 @@ const HomeScreen = ({ navigation }) => {
     Voice.onSpeechEnd = () => setRecording(false);
     Voice.onSpeechError = (err) =>
       setError(err.error.message || "An error occurred");
-    Voice.onSpeechResults = (result) =>
-      setMessages([...messages, result.value[0]]);
+    Voice.onSpeechResults = (result) => {
+      const newSentence = result.value[0];
+      setMessages((prevMessages) => [...prevMessages, newSentence]);
 
+      updateWordFrequencies(newSentence);
+    };
+
+    startdd();
     return () => {
       Voice.destroy().then(Voice.removeAllListeners);
     };
   }, []);
-  console.log(messages);
-  console.log("eror", error);
 
-  // const onSpeechStart = (event) => {
-  //   console.log("onSpeechStart",event);
-  // };
+  const storeData = async () => {
+    try {
+      const jsonValue = JSON.stringify(wordFrequencies);
+      console.log("wordFrequencies effect :: ", jsonValue);
+      await AsyncStorage.setItem('word_count', jsonValue);
+    } catch (e) {
+      console.error(e.message);
+    }
+  };
 
-  // const onSpeechEnd =(event) => {
-  //   console.log("onSpeechEnd",event);
-  //   stopListing();
-  // };
+  const startdd = () =>{
+    messages.map((message) =>{
+      updateWordFrequencies(message);
+    })
+  }
+  console.log("Speech", messages);
+  console.log("error", error);
 
-  // const onSpeechResults = (event) => {
-  //   console.log("onSpeechResults event",event);
-  //   const text = event.value;
-  //   setMessages([...messages, text]);
-  // };
+  const updateWordFrequencies = (sentence) => {
+    const words = sentence.trim().toLowerCase().split(/\s+/);
+    setWordFrequencies((prevFrequencies) => {
+      const newFrequencies = { ...prevFrequencies };
+      words.forEach((word) => {
+        newFrequencies[word] = (newFrequencies[word] || 0) + 1;
+      });
+      storeData();
+      return newFrequencies;
+    });
+  };
 
-  // const startListing = async () =>{
-  //   setRecording(true);
-  //   try{
-  //     await Voice.start('en-US');
-  //     console.log("Voice started successfully");
-  //   }catch(error){
-  //     console.error("Some Error in Listening : ",error);
-  //     setRecording(false);
-  //   }
-  // }
-
-  // const stopListing = async () =>{
-  //   try{
-  //     await Voice.stop();
-  //     await Voice.destroy();
-  //     setRecording(false);
-  //     console.log("Stopping Voice");
-  //   }
-  //   catch(error){
-  //     console.error("Some Error in Listening : ",error);
-  //   }
-  // }
-
-  const clearAll =() =>{
+  const clearAll = () => {
     setMessages([]);
     setError("");
-    setRecording(false)
-  }
+    setRecording(false);
+    setWordFrequencies({});
+  };
 
   const startRecording = async () => {
     try {
@@ -90,16 +116,16 @@ const HomeScreen = ({ navigation }) => {
   const stopRecording = async () => {
     try {
       await Voice.stop();
-      recording ? setRecording(false) : <></>;
+      setRecording(false);
     } catch (err) {
       setError(err.message || "An error occurred while stopping recording");
     }
   };
 
   const countWords = (text) => {
-    const words = text.trim().split(/\s+/); // Split sentence by spaces (one or more) and remove extra spaces
-    const count = words.filter(word => word.length > 0).length; // Filter out empty strings
-   return count;
+    const words = text.trim().split(/\s+/);
+    const count = words.filter((word) => word.length > 0).length;
+    return count;
   };
 
   return (
@@ -112,12 +138,12 @@ const HomeScreen = ({ navigation }) => {
           />
         </View>
         {messages.length > 0 ? (
-          <View className="flex-1 items-start p-3">
-            <ScrollView className="h-44 w-64 bg-gray-200 p-5">
-              <View className="flex-row flex-wrap">
+          <View className="flex-1 items-start py-4">
+            <ScrollView className="h-44 w-64 bg-gray-200">
+              <View className="flex-row flex-wrap p-3">
                 {messages.map((message, index) => (
                   <Text key={index} className="mr-2 text-xl text-black">
-                    {message}
+                    {index}. {message},
                   </Text>
                 ))}
               </View>
@@ -128,11 +154,27 @@ const HomeScreen = ({ navigation }) => {
             Welcome to the Voice word count !!
           </Text>
         )}
-        { messages.length > 0 && <View>
-  <Text className="text-black">Number of messages: {messages.length}</Text>
-  <Text className="text-black">Total Word Count: {messages.length > 0 ? messages.map((message) => countWords(message)).reduce((acc, curr) => acc + curr, 0) : 0}</Text>
-</View>}
-        <View className="flex justify-center items-center py-20">
+        {messages.length > 0 && (
+          <View>
+            <Text className="text-black">
+              Number of messages: {messages.length}
+            </Text>
+            <Text className="text-black">
+              Total Word Count:{" "}
+              {messages.length > 0
+                ? messages
+                    .map((message) => countWords(message))
+                    .reduce((acc, curr) => acc + curr, 0)
+                : 0}
+            </Text>
+            <ScrollView style={{height:150}}>
+              <Text className="text-black">
+                Word Frequencies: {JSON.stringify(wordFrequencies, null, 2)}
+              </Text>
+            </ScrollView>
+          </View>
+        )}
+        <View className="flex justify-center items-center py-10">
           {recording ? (
             <TouchableOpacity onPress={stopRecording}>
               <Image
@@ -150,7 +192,8 @@ const HomeScreen = ({ navigation }) => {
           )}
 
           {messages.length > 0 && (
-            <TouchableOpacity className="rounded-3xl p-2 absolute right-0"
+            <TouchableOpacity
+              className="rounded-3xl p-2 absolute right-0"
               onPress={clearAll}
             >
               <Button
@@ -185,4 +228,4 @@ const HomeScreen = ({ navigation }) => {
 
 export default HomeScreen;
 
-const styles = StyleSheet.create({});
+// const styles = StyleSheet.create({});
